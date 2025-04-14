@@ -77,6 +77,24 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin', require('./routes/admin'));
 
+// Root route handler
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Welcome to Recipe API',
+    status: 'Server is running',
+    endpoints: {
+      auth: '/api/auth',
+      recipes: '/api/recipes',
+      reviews: '/api/reviews',
+      categories: '/api/categories',
+      users: '/api/users',
+      favorites: '/api/favorites',
+      uploads: '/api/uploads',
+      admin: '/api/admin'
+    }
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
