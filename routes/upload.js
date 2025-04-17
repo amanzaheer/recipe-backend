@@ -16,61 +16,35 @@ const handleMulterError = (err, req, res, next) => {
   next(err);
 };
 
-// Upload single image
-router.post('/single', protect, (req, res, next) => {
-  upload.single('image')(req, res, (err) => {
-    if (err) {
-      console.error('Upload error:', err);
-      if (err.message.includes('Only image files')) {
-        return res.status(400).json({ error: err.message });
-      }
-      return next(err);
+// Single file upload
+router.post('/', protect, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+    res.json({
+      success: true,
+      file: {
+        path: `/uploads/${req.file.filename}`,
+        filename: req.file.filename
       }
-
-      // Return the relative path from the uploads directory
-      const relativePath = path.relative(uploadsDir, req.file.path);
-      
-      // Log successful upload
-      console.log('File uploaded successfully:', {
-        originalName: req.file.originalname,
-        filename: req.file.filename,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
-        path: `/uploads/${relativePath}`
-      });
-      
-      res.json({
-        success: true,
-        file: {
-          path: `/uploads/${relativePath}`,
-          filename: req.file.filename,
-          originalName: req.file.originalname,
-          size: req.file.size,
-          mimetype: req.file.mimetype
-        }
-      });
-    } catch (error) {
-      console.error('Upload processing error:', error);
-      res.status(500).json({ error: 'Error processing uploaded file' });
-    }
-  });
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Error uploading file' });
+  }
 });
 
-// Upload multiple images
-router.post('/multiple', upload.array('images', 5), (req, res) => {
+// Multiple files upload
+router.post('/multiple', protect, upload.array('images', 5), (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    // Return the relative paths from the uploads directory
     const files = req.files.map(file => ({
-      path: `/uploads/${path.relative(uploadsDir, file.path)}`,
+      path: `/uploads/${file.filename}`,
       filename: file.filename
     }));
 

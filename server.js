@@ -21,14 +21,35 @@ const uploadRoutes = require('./routes/upload');
 const app = express();
 
 // CORS configuration
-const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true
-};
 
-app.use(cors(corsOptions));
+
+
+app.use((req, res, next) => {
+   // Set explicit CORS headers for all routes
+   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+   res.header('Access-Control-Allow-Credentials', 'true');
+   
+   // Handle preflight requests
+   if (req.method === 'OPTIONS') {
+     return res.status(200).end();
+   }
+   
+   next();
+ });
+
+
+// const corsOptions = {
+//   origin: ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5000'],
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+//   credentials: true
+// };
+
+
+app.use(cors());
+// app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -65,7 +86,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/favorites', favoriteRoutes);
-app.use('/api/uploads', uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', require('./routes/admin'));
 
 // Root route handler
